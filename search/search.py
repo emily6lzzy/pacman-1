@@ -90,9 +90,32 @@ def depthFirstSearch(problem):
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import Queue
+
+    node = [problem.getStartState()]
+    pathCost = 0
+    predecessors = {}
+    frontier = Queue()
+    explored = set()
+
+    if problem.isGoalState(node[0]):
+        return predecessors
+
+    frontier.push(node)
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        explored.add(node[0])
+        
+        for successor in problem.getSuccessors(node[0]):
+            if successor[0] not in explored and successor not in frontier.list:
+                predecessors[str(successor[0])] = node
+
+                if problem.isGoalState(successor[0]):
+                    return getPredecessorsDirections(predecessors, problem.getStartState(), successor)
+
+                frontier.push(successor)
+
+    raise AssertionError("Error: solution not found")
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
@@ -111,6 +134,17 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
 
+
+def getPredecessorsDirections(predecessors, start, end):
+    """Build directions array from predecessors sequence."""
+    directions = [end[1]]
+    current = end[0]
+    while predecessors[str(current)][0] != start:
+        directions.append(predecessors[str(current)][1])
+        current = predecessors[str(current)][0]
+
+    directions.reverse()
+    return directions
 
 # Abbreviations
 bfs = breadthFirstSearch
