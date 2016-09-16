@@ -73,49 +73,15 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def depthFirstSearch(problem):
-    """
-    Search the deepest nodes in the search tree first.
-
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
-    """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    """Performs DFS in order to find a path for the solution"""
+    from util import Stack
+    return genericSearch(problem, Stack())
 
 def breadthFirstSearch(problem):
+    """Performs BFS in order to find a path for the solution"""
     from util import Queue
+    return genericSearch(problem, Queue())
 
-    node = [problem.getStartState()]
-    pathCost = 0
-    predecessors = {}
-    frontier = Queue()
-    explored = set()
-
-    if problem.isGoalState(node[0]):
-        return predecessors
-
-    frontier.push(node)
-    while not frontier.isEmpty():
-        node = frontier.pop()
-        explored.add(node[0])
-        
-        for successor in problem.getSuccessors(node[0]):
-            if successor[0] not in explored and successor not in frontier.list:
-                predecessors[str(successor[0])] = node
-
-                if problem.isGoalState(successor[0]):
-                    return getPredecessorsDirections(predecessors, problem.getStartState(), successor)
-
-                frontier.push(successor)
-
-    raise AssertionError("Error: solution not found")
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
@@ -145,6 +111,36 @@ def getPredecessorsDirections(predecessors, start, end):
 
     directions.reverse()
     return directions
+
+
+def genericSearch(problem, frontier):
+    """ 
+    A generic search function that decides which nodes will be explored 
+    base on frontier pop's policy
+    """
+    node = [problem.getStartState()]
+    pathCost = 0
+    predecessors = {}
+    explored = set()
+
+    if problem.isGoalState(node[0]):
+        return predecessors
+
+    frontier.push(node)
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        explored.add(node[0])
+        
+        for successor in problem.getSuccessors(node[0]):
+            if successor[0] not in explored and successor not in frontier.list:
+                predecessors[str(successor[0])] = node
+
+                if problem.isGoalState(successor[0]):
+                    return getPredecessorsDirections(predecessors, problem.getStartState(), successor)
+
+                frontier.push(successor)
+
+    raise AssertionError("Error: solution not found")
 
 # Abbreviations
 bfs = breadthFirstSearch
