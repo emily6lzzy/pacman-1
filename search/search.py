@@ -68,14 +68,17 @@ class Coordinate:
 
     def __init__(self, array):
         self.coordinate = array[0]
-        self.direction = array[1] if len(array) > 1 else None
+        self.directions = []
         self.cost = array[2] if len(array) > 2 else None
+
+        if len(array) > 1:
+            self.directions += array[1]
 
     def __eq__(self, other):
         return self.coordinate == other.coordinate
 
     def __str__(self):
-        return "%s -- %s -- %d" % (str(self.coordinate), self.direction, self.cost)
+        return "%s -- %s -- %d" % (str(self.coordinate), self.directions, self.cost)
 
     __repr__ = __str__
         
@@ -105,11 +108,9 @@ def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     from util import PriorityQueueWithFunction
 
-    priorityFunction = lambda item: item.cost + (predecessors[str(item.coordinate)].cost \
-        if str(item.coordinate) in predecessors else 0)
+    priorityFunction = lambda item: item.cost
 
-    node = Coordinate([problem.getStartState(), None, 0])
-    predecessors = {}
+    node = Coordinate([problem.getStartState(), [], 0])
     explored = []
     frontier = PriorityQueueWithFunction(priorityFunction)
 
@@ -119,21 +120,20 @@ def uniformCostSearch(problem):
     frontier.push(node)
     while not frontier.isEmpty():
         node = frontier.pop()
-        explored.append(node)
 
-        for successor in problem.getSuccessors(node.coordinate):
-            successor = Coordinate(successor)
+        if problem.isGoalState(node.coordinate):
+            return node.directions
 
-            if successor not in explored:
-                predecessors[str(successor.coordinate)] = node
+        if node not in explored:
+            explored.append(node)
 
-                if problem.isGoalState(successor.coordinate):
-                    return getPredecessorsDirections(predecessors, Coordinate([problem.getStartState()]), successor)
-
-                try:
-                    frontier.update(successor, priorityFunction(successor))
-                except Exception, e:
-                    frontier.push(successor)
+            for successor in problem.getSuccessors(node.coordinate):
+                successor = Coordinate([successor[0], node.directions + [successor[1]], successor[2] + node.cost])
+                if successor not in explored:
+                    try:
+                        frontier.update(successor, priorityFunction(successor))
+                    except Exception, e:
+                        frontier.push(successor)
                 
     raise AssertionError("Error: solution not found")
 
@@ -149,26 +149,12 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
 
-
-def getPredecessorsDirections(predecessors, start, end):
-    """Build directions array from predecessors sequence."""
-    directions = []
-    current = end
-    while str(current.coordinate) in predecessors:
-        directions.append(current.direction)
-        current = predecessors[str(current.coordinate)]
-
-    directions.reverse()
-    return directions
-
-
 def genericSearch(problem, frontier):
     """ 
     A generic search function that decides which nodes will be explored 
     base on frontier pop's policy
     """
-    node = Coordinate([problem.getStartState(), None, 0])
-    predecessors = {}
+    node = Coordinate([problem.getStartState(), [], 0])
     explored = []
 
     frontier.push(node)
@@ -176,16 +162,15 @@ def genericSearch(problem, frontier):
         node = frontier.pop()
 
         if problem.isGoalState(node.coordinate):
-            return getPredecessorsDirections(predecessors, Coordinate([problem.getStartState()]), node)
+            return node.directions
 
         if node not in explored:
             explored.append(node)
-        
+
             for successor in problem.getSuccessors(node.coordinate):
-                successor = Coordinate(successor)
+                successor = Coordinate([successor[0], node.directions + [successor[1]], successor[2]])
                 if successor not in explored:
                     frontier.push(successor)
-                    predecessors[str(successor.coordinate)] = node
 
     raise AssertionError("Error: solution not found")
 
