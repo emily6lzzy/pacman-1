@@ -18,6 +18,7 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+from util import PriorityQueueWithFunction
 
 class SearchProblem:
     """
@@ -93,49 +94,26 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+dfsCount = 0
 def depthFirstSearch(problem):
     """Performs DFS in order to find a path for the solution"""
-    from util import Stack
-    return genericSearch(problem, Stack())
+    def dfsFunction(item):
+        global dfsCount 
+        dfsCount -= 1
+        return dfsCount
+
+    frontier = PriorityQueueWithFunction(dfsFunction)
+    return genericSearch(problem, frontier)
 
 def breadthFirstSearch(problem):
     """Performs BFS in order to find a path for the solution"""
-    from util import Queue
-    return genericSearch(problem, Queue())
-
+    frontier = PriorityQueueWithFunction(lambda item: len(item.directions))
+    return genericSearch(problem, frontier)
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    from util import PriorityQueueWithFunction
-
-    priorityFunction = lambda item: item.cost
-
-    node = Coordinate([problem.getStartState(), [], 0])
-    explored = []
-    frontier = PriorityQueueWithFunction(priorityFunction)
-
-    if problem.isGoalState(node.coordinate):
-        return []
-
-    frontier.push(node)
-    while not frontier.isEmpty():
-        node = frontier.pop()
-
-        if problem.isGoalState(node.coordinate):
-            return node.directions
-
-        if node not in explored:
-            explored.append(node)
-
-            for successor in problem.getSuccessors(node.coordinate):
-                successor = Coordinate([successor[0], node.directions + [successor[1]], successor[2] + node.cost])
-                if successor not in explored:
-                    try:
-                        frontier.update(successor, priorityFunction(successor))
-                    except Exception, e:
-                        frontier.push(successor)
-                
-    raise AssertionError("Error: solution not found")
+    frontier = PriorityQueueWithFunction(lambda item: item.cost)
+    return genericSearch(problem, frontier)
 
 def nullHeuristic(state, problem=None):
     """
@@ -150,10 +128,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     util.raiseNotDefined()
 
 def genericSearch(problem, frontier):
-    """ 
-    A generic search function that decides which nodes will be explored 
-    base on frontier pop's policy
-    """
+    """Search the node of least total cost first."""
     node = Coordinate([problem.getStartState(), [], 0])
     explored = []
 
@@ -168,10 +143,10 @@ def genericSearch(problem, frontier):
             explored.append(node)
 
             for successor in problem.getSuccessors(node.coordinate):
-                successor = Coordinate([successor[0], node.directions + [successor[1]], successor[2]])
+                successor = Coordinate([successor[0], node.directions + [successor[1]], successor[2] + node.cost])
                 if successor not in explored:
                     frontier.push(successor)
-
+                
     raise AssertionError("Error: solution not found")
 
 # Abbreviations
