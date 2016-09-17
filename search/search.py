@@ -76,6 +76,8 @@ class Coordinate:
 
     def __str__(self):
         return "%s -- %s -- %d" % (str(self.coordinate), self.direction, self.cost)
+
+    __repr__ = __str__
         
 
 def tinyMazeSearch(problem):
@@ -101,8 +103,39 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueueWithFunction
+
+    priorityFunction = lambda item: item.cost + (predecessors[str(item.coordinate)].cost \
+        if str(item.coordinate) in predecessors else 0)
+
+    node = Coordinate([problem.getStartState(), None, 0])
+    predecessors = {}
+    explored = []
+    frontier = PriorityQueueWithFunction(priorityFunction)
+
+    if problem.isGoalState(node.coordinate):
+        return []
+
+    frontier.push(node)
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        explored.append(node)
+
+        for successor in problem.getSuccessors(node.coordinate):
+            successor = Coordinate(successor)
+
+            if successor not in explored:
+                predecessors[str(successor.coordinate)] = node
+
+                if problem.isGoalState(successor.coordinate):
+                    return getPredecessorsDirections(predecessors, Coordinate([problem.getStartState()]), successor)
+
+                try:
+                    frontier.update(successor, priorityFunction(successor))
+                except Exception, e:
+                    frontier.push(successor)
+                
+    raise AssertionError("Error: solution not found")
 
 def nullHeuristic(state, problem=None):
     """
@@ -135,7 +168,6 @@ def genericSearch(problem, frontier):
     base on frontier pop's policy
     """
     node = Coordinate([problem.getStartState()])
-    pathCost = 0
     predecessors = {}
     explored = []
 
