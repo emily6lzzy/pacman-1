@@ -61,6 +61,22 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
+class Coordinate:
+    """
+    This class defines the object that represents each pacman map's coordinate
+    """
+
+    def __init__(self, array):
+        self.coordinate = array[0]
+        self.direction = array[1] if len(array) > 1 else None
+        self.cost = array[2] if len(array) > 2 else None
+
+    def __eq__(self, other):
+        return self.coordinate == other.coordinate
+
+    def __str__(self):
+        return "%s -- %s -- %d" % (str(self.coordinate), self.direction, self.cost)
+        
 
 def tinyMazeSearch(problem):
     """
@@ -103,11 +119,11 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
 def getPredecessorsDirections(predecessors, start, end):
     """Build directions array from predecessors sequence."""
-    directions = [end[1]]
-    current = end[0]
-    while predecessors[str(current)][0] != start:
-        directions.append(predecessors[str(current)][1])
-        current = predecessors[str(current)][0]
+    directions = []
+    current = end
+    while str(current.coordinate) in predecessors:
+        directions.append(current.direction)
+        current = predecessors[str(current.coordinate)]
 
     directions.reverse()
     return directions
@@ -118,25 +134,26 @@ def genericSearch(problem, frontier):
     A generic search function that decides which nodes will be explored 
     base on frontier pop's policy
     """
-    node = [problem.getStartState()]
+    node = Coordinate([problem.getStartState()])
     pathCost = 0
     predecessors = {}
-    explored = set()
+    explored = []
 
-    if problem.isGoalState(node[0]):
-        return predecessors
+    if problem.isGoalState(node.coordinate):
+        return []
 
     frontier.push(node)
     while not frontier.isEmpty():
         node = frontier.pop()
-        explored.add(node[0])
+        explored.append(node)
         
-        for successor in problem.getSuccessors(node[0]):
-            if successor[0] not in explored and successor not in frontier.list:
-                predecessors[str(successor[0])] = node
+        for successor in problem.getSuccessors(node.coordinate):
+            successor = Coordinate(successor)
+            if successor not in explored and successor not in frontier.list:
+                predecessors[str(successor.coordinate)] = node
 
-                if problem.isGoalState(successor[0]):
-                    return getPredecessorsDirections(predecessors, problem.getStartState(), successor)
+                if problem.isGoalState(successor.coordinate):
+                    return getPredecessorsDirections(predecessors, Coordinate([problem.getStartState()]), successor)
 
                 frontier.push(successor)
 
