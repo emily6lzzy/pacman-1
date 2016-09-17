@@ -167,27 +167,25 @@ def genericSearch(problem, frontier):
     A generic search function that decides which nodes will be explored 
     base on frontier pop's policy
     """
-    node = Coordinate([problem.getStartState()])
+    node = Coordinate([problem.getStartState(), None, 0])
     predecessors = {}
     explored = []
-
-    if problem.isGoalState(node.coordinate):
-        return []
 
     frontier.push(node)
     while not frontier.isEmpty():
         node = frontier.pop()
-        explored.append(node)
+
+        if problem.isGoalState(node.coordinate):
+            return getPredecessorsDirections(predecessors, Coordinate([problem.getStartState()]), node)
+
+        if node not in explored:
+            explored.append(node)
         
-        for successor in problem.getSuccessors(node.coordinate):
-            successor = Coordinate(successor)
-            if successor not in explored and successor not in frontier.list:
-                predecessors[str(successor.coordinate)] = node
-
-                if problem.isGoalState(successor.coordinate):
-                    return getPredecessorsDirections(predecessors, Coordinate([problem.getStartState()]), successor)
-
-                frontier.push(successor)
+            for successor in problem.getSuccessors(node.coordinate):
+                successor = Coordinate(successor)
+                if successor not in explored:
+                    frontier.push(successor)
+                    predecessors[str(successor.coordinate)] = node
 
     raise AssertionError("Error: solution not found")
 
