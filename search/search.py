@@ -124,10 +124,10 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = PriorityQueueWithFunction(lambda item: item.cost + heuristic(item.coordinate, problem))
+    return genericSearch(problem, frontier, heuristic)    
 
-def genericSearch(problem, frontier):
+def genericSearch(problem, frontier, heuristic=nullHeuristic):
     """Search the node of least total cost first."""
     node = Coordinate([problem.getStartState(), [], 0])
     explored = []
