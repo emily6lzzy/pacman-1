@@ -363,17 +363,16 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    distance = 0
-
+    distances = [0]
     for missingCoordinate in set(corners) - state['corners']:
-        distance += abs(state['position'][0] - missingCoordinate[0]) + \
-                    abs(state['position'][1] - missingCoordinate[1])
+        distances.append(abs(state['position'][0] - missingCoordinate[0]) + \
+                    abs(state['position'][1] - missingCoordinate[1]))
 
-    return distance
+    return max(distances)
     
 
 class AStarCornersAgent(SearchAgent):
-    "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
+    "A SearchAgent for CornersSearchProblem using A* and your cornersHeuristic"
     def __init__(self):
         self.searchFunction = lambda prob: search.aStarSearch(prob, cornersHeuristic)
         self.searchType = CornersProblem
