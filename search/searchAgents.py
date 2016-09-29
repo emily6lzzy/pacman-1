@@ -361,7 +361,6 @@ def cornersHeuristic(state, problem):
     admissible (as well as consistent).
     """
     corners = problem.corners # These are the corner coordinates
-    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     distances = [0]
     for missingCoordinate in set(corners) - state['corners']:
@@ -462,8 +461,13 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    
+    distances = [0]
+    for missingFoodCoordinate in set(foodGrid.asList()):
+        distances.append(abs(position[0] - missingFoodCoordinate[0]) + \
+                        abs(position[1] - missingFoodCoordinate[1]))
+
+    return max(distances)
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
