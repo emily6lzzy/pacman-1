@@ -464,8 +464,14 @@ def foodHeuristic(state, problem):
     
     distances = [0]
     for missingFoodCoordinate in set(foodGrid.asList()):
-        distances.append(abs(position[0] - missingFoodCoordinate[0]) + \
-                        abs(position[1] - missingFoodCoordinate[1]))
+        key = str(position) + str(missingFoodCoordinate)
+
+        if key not in problem.heuristicInfo.keys():
+            # based on mazeDistance function 
+            prob = PositionSearchProblem(problem.startingGameState, start=position, goal=missingFoodCoordinate, warn=False, visualize=False)
+            problem.heuristicInfo[key] = len(search.aStarSearch(prob, manhattanHeuristic))
+            
+        distances.append(problem.heuristicInfo[key])
 
     return max(distances)
 
