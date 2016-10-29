@@ -177,8 +177,46 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.maxValue(gameState, 0, -sys.maxsize, sys.maxsize)[0];
+
+
+    def maxValue(self, gameState, level, alpha, beta):
+      if self.terminalTest(gameState, level):
+        return self.evaluationFunction(gameState);
+
+      value = (None, -sys.maxsize)
+      for pacmanAction in gameState.getLegalActions():
+        newValue = (pacmanAction, self.minValue(gameState.generateSuccessor(0, pacmanAction), level + 1, alpha, beta));
+        value = max([value, newValue], key = lambda v: v[1]);
+        alpha = max(alpha, value[1]);      
+        
+        if value[1] > beta:
+          return value[1] if level != 0 else value;
+
+      return value[1] if level != 0 else value;
+
+
+    def minValue(self, gameState, level, alpha, beta):
+      currentAgentIndex = level % gameState.getNumAgents();
+      nextAgentIndex = (level + 1) % gameState.getNumAgents();
+
+      if self.terminalTest(gameState, level):
+        return self.evaluationFunction(gameState);
+
+      value = (None, sys.maxsize);
+      for agentAction in gameState.getLegalActions(currentAgentIndex):
+        if nextAgentIndex == 0:
+          newValue = (agentAction, self.maxValue(gameState.generateSuccessor(currentAgentIndex, agentAction), level + 1, alpha, beta));
+        else:
+          newValue = (agentAction, self.minValue(gameState.generateSuccessor(currentAgentIndex, agentAction), level + 1, alpha, beta));
+
+        value = min([value, newValue], key = lambda v: v[1]);
+        beta = min(beta, value[1]);
+
+        if value[1] < alpha:
+          return value[1];
+
+      return value[1];
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
