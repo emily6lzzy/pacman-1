@@ -15,6 +15,8 @@
 from util import manhattanDistance
 from game import Directions
 import random, util
+import sys
+import pdb
 
 from game import Agent
 
@@ -105,6 +107,10 @@ class MultiAgentSearchAgent(Agent):
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
 
+    def terminalTest(self, gameState, level):
+      return level >= self.depth or len(gameState.getLegalActions()) == 0;
+
+
 class MinimaxAgent(MultiAgentSearchAgent):
     """
       Your minimax agent (question 2)
@@ -127,8 +133,57 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.maxValue(gameState,0)[0];
+
+
+    def maxValue(self, gameState, level):
+      s = "MAX", level, ":";
+      tabs = "";
+      for x in range(0, level):
+        tabs += "\t" 
+      
+      # print tabs , s;
+
+      if self.terminalTest(gameState, level):
+        # print tabs, self.evaluationFunction(gameState);
+        return self.evaluationFunction(gameState);
+
+      values = [(None, -sys.maxsize)];
+      for pacmanAction in gameState.getLegalActions():
+        values += [(pacmanAction, self.minValue(gameState.generateSuccessor(ghostId, pacmanAction), level + 1)) 
+                  for ghostId in range(1, gameState.getNumAgents())];
+    
+      # print tabs, values, ": ", max(values, key = lambda v: v[1]);
+
+      maxValueResult = max(values, key = lambda v: v[1]);
+      if level != 0: return maxValueResult[1];
+      else: return maxValueResult;
+
+
+    def minValue(self, gameState, level):
+      s = "MIN", level, ":";
+      tabs = "";
+      for x in range(0, level):
+        tabs += "\t" 
+      
+      # print tabs , s;
+
+  
+      if self.terminalTest(gameState, level):
+        # print tabs, self.evaluationFunction(gameState);
+        return self.evaluationFunction(gameState);
+
+      values = [(None, sys.maxsize)];
+      for pacmanAction in gameState.getLegalActions():
+        values += [(pacmanAction, self.maxValue(gameState.generateSuccessor(ghostId, pacmanAction), level + 1)) 
+                  for ghostId in range(1, gameState.getNumAgents())];
+        
+      # print tabs, values, ": ", min(values, key = lambda v: v[1]);
+
+      minValueResult = min(values, key = lambda v: v[1]);
+      if level != 0: return minValueResult[1];
+      else: return minValueResult;
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
