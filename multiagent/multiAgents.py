@@ -184,7 +184,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
       if self.terminalTest(gameState, level):
         return self.evaluationFunction(gameState);
 
-      value = (None, -sys.maxsize)
+      value = (None, -sys.maxsize);
       for pacmanAction in gameState.getLegalActions():
         newValue = (pacmanAction, self.minValue(gameState.generateSuccessor(0, pacmanAction), level + 1, alpha, beta));
         value = max([value, newValue], key = lambda v: v[1]);
@@ -230,8 +230,43 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        nextMove = max(self.maxValue(gameState, 0), key = lambda v: v[1])[0];
+        return nextMove;
+
+
+    def maxValue(self, gameState, level):
+      if self.terminalTest(gameState, level):
+        return self.evaluationFunction(gameState);
+
+      pFactor = 1.0 / len(gameState.getLegalActions());
+      values = \
+               [(pacmanAction, self.minValue(gameState.generateSuccessor(0, pacmanAction), level + 1)) 
+                for pacmanAction in gameState.getLegalActions()];
+
+      if level != 0:
+        return max(v[1] for v in values);
+      else:
+        return values;
+
+    def minValue(self, gameState, level):
+      currentAgentIndex = level % gameState.getNumAgents();
+      nextAgentIndex = (level + 1) % gameState.getNumAgents();
+
+      if self.terminalTest(gameState, level):
+        return self.evaluationFunction(gameState);
+
+      values = [];
+      pFactor = 1.0 / len(gameState.getLegalActions(currentAgentIndex));
+
+      if nextAgentIndex == 0:
+        values += [(agentAction, pFactor * self.maxValue(gameState.generateSuccessor(currentAgentIndex, agentAction), level + 1)) 
+                  for agentAction in gameState.getLegalActions(currentAgentIndex)];
+      else:
+        values += [(agentAction, pFactor * self.minValue(gameState.generateSuccessor(currentAgentIndex, agentAction), level + 1)) 
+                  for agentAction in gameState.getLegalActions(currentAgentIndex)];
+
+      return sum(v[1] for v in values);
+
 
 def betterEvaluationFunction(currentGameState):
     """
