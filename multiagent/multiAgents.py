@@ -268,24 +268,36 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       return sum(v[1] for v in values);
 
 
-FOOD_WEIGHT = 10;
-CAPSULE_WEIGHT = 100;
-SCARED_GHOST = 1500;
-GHOST = 500;
-SCORE = 1;
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION 
+
+      I considered four different metrics to build the evaluation function:
+      * Food distance
+      * Capsule distance
+      * Ghost distance
+      * scared ghost distance
+
+      Also, I used weighted average in order to some metrics. The statements
+      that defined the weights -- along with their values -- are descibred below:
+      (1) The pacman should focus on pursue a ghost when it is scared (100)
+      (2) The pacman should focus on eating capsules in favor of food (30) 
+      (3) The pacman should avoid ghosts (-10)
+      (4) The pacman should focus on eating food whenever it's possible (10)
     """
+    FOOD_WEIGHT = 10.0;
+    CAPSULE_WEIGHT = 30.0;
+    SCARED_GHOST_WEIGHT = 100.0;
+    GHOST_WEIGHT = -10.0;
+
     newPos = currentGameState.getPacmanPosition();
-    foods = currentGameState.getFood();
+    foods = currentGameState.getFood().asList();
     capsules = currentGameState.getCapsules();
     ghosts = currentGameState.getGhostStates();
 
-    # newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates];
     distancesToFood = [manhattanDistance(newPos, foodPos) for foodPos in foods];
     distancesToCapsules = [manhattanDistance(newPos, capsulePos) for capsulePos in capsules];
     distancesToScaredGhosts = [manhattanDistance(newPos, ghostState.getPosition()) 
@@ -293,11 +305,16 @@ def betterEvaluationFunction(currentGameState):
     distancesToGhosts = [manhattanDistance(newPos, ghostState.getPosition()) 
                         for ghostState in ghosts if ghostState.scaredTimer == 0];
     
-    foodValue = FOOD_WEIGHT / (min(distancesToFood) if len(distancesToFood) > 0 else FOOD_WEIGHT);
-    capsuleValue = CAPSULE_WEIGHT / (min(distancesToCapsules) if len(distancesToCapsules) > 0 else CAPSULE_WEIGHT);
-    scoreValue = SCORE * currentGameState.getScore();
-    ghostValue = GHOST / sum(distancesToGhosts, 1);
-    scaredGhostValue = SCARED_GHOST / sum(distancesToScaredGhosts, 1);
+    minFoodDistance = min(distancesToFood) if len(distancesToFood) > 0 else 1;
+    minCapsuleDistance = min(distancesToCapsules) if len(distancesToCapsules) > 0 else 1;
+    minGhostDistance = min(distancesToGhosts) if len(distancesToGhosts) > 0 else 1;
+
+    # Because it should be better for lower values
+    foodValue = FOOD_WEIGHT / minFoodDistance;
+    capsuleValue = CAPSULE_WEIGHT / minCapsuleDistance;
+    ghostValue = GHOST_WEIGHT / sum(distancesToGhosts,1);
+    scaredGhostValue = SCARED_GHOST_WEIGHT / sum(distancesToScaredGhosts, 1);
+    scoreValue = currentGameState.getScore();
 
     evalutaedValue = scoreValue + ghostValue + scaredGhostValue + foodValue + capsuleValue;
     return evalutaedValue;
@@ -306,3 +323,4 @@ def betterEvaluationFunction(currentGameState):
 # Abbreviation
 better = betterEvaluationFunction
 
+# 
