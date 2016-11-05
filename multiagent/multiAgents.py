@@ -268,6 +268,11 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       return sum(v[1] for v in values);
 
 
+FOOD_WEIGHT = 10;
+CAPSULE_WEIGHT = 100;
+SCARED_GHOST = 1500;
+GHOST = 500;
+SCORE = 1;
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -275,8 +280,28 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    newPos = currentGameState.getPacmanPosition();
+    foods = currentGameState.getFood();
+    capsules = currentGameState.getCapsules();
+    ghosts = currentGameState.getGhostStates();
+
+    # newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates];
+    distancesToFood = [manhattanDistance(newPos, foodPos) for foodPos in foods];
+    distancesToCapsules = [manhattanDistance(newPos, capsulePos) for capsulePos in capsules];
+    distancesToScaredGhosts = [manhattanDistance(newPos, ghostState.getPosition()) 
+                              for ghostState in ghosts if ghostState.scaredTimer > 0];
+    distancesToGhosts = [manhattanDistance(newPos, ghostState.getPosition()) 
+                        for ghostState in ghosts if ghostState.scaredTimer == 0];
+    
+    foodValue = FOOD_WEIGHT / (min(distancesToFood) if len(distancesToFood) > 0 else FOOD_WEIGHT);
+    capsuleValue = CAPSULE_WEIGHT / (min(distancesToCapsules) if len(distancesToCapsules) > 0 else CAPSULE_WEIGHT);
+    scoreValue = SCORE * currentGameState.getScore();
+    ghostValue = GHOST / sum(distancesToGhosts, 1);
+    scaredGhostValue = SCARED_GHOST / sum(distancesToScaredGhosts, 1);
+
+    evalutaedValue = scoreValue + ghostValue + scaredGhostValue + foodValue + capsuleValue;
+    return evalutaedValue;
+
 
 # Abbreviation
 better = betterEvaluationFunction
