@@ -43,8 +43,21 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.iterations = iterations
         self.values = util.Counter() # A Counter is a dict with default 0
 
-        # Write value iteration code here
-        "*** YOUR CODE HERE ***"
+        for index in range(0, self.iterations):
+            currentValues = self.values.copy()  # Using batch version of values' array
+
+            for state in [state for state in mdp.getStates() if not self.mdp.isTerminal(state)]:
+                actionValues = []
+            
+                # calculates the value for each possible action
+                for action in self.mdp.getPossibleActions(state):
+                    actionValues.append(self.getQValue(state, action))
+
+                # stores best action in utility array
+                currentValues[state] = max(actionValues)
+
+            # updates utility array
+            self.values = currentValues
 
 
     def getValue(self, state):
@@ -59,8 +72,14 @@ class ValueIterationAgent(ValueEstimationAgent):
           Compute the Q-value of action in state from the
           value function stored in self.values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        value = 0
+        for transition in self.mdp.getTransitionStatesAndProbs(state, action):
+            nextState = transition[0]
+            probability = transition[1]
+            currentReward = self.mdp.getReward(state, action, nextState)
+
+            value += probability * self.discount * self.values[nextState] + currentReward
+        return value
 
     def computeActionFromValues(self, state):
         """
@@ -71,8 +90,14 @@ class ValueIterationAgent(ValueEstimationAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return None.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # Using self.getQValue instead of self.getValue as it should return next policy value
+        directions = [(direction, self.getQValue(state, direction))
+                      for direction in self.mdp.getPossibleActions(state)]
+
+        if len(directions) > 0:
+            return max(directions, key=lambda v: v[1])[0]
+
+        return None
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
